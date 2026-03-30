@@ -1,0 +1,36 @@
+# Environment variables (tokens, secrets)
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+
+# TypeScript
+*.tsbuildinfo
+
+# Drizzle ORM
+drizzle/meta/_journal.json.bak
+
+# Editor / tool config (machine-specific)
+.vscode/
+.claude/
+*.swp
+*.swo
+*~
+
+# Project tooling
+.superpowers/
+.worktrees/
