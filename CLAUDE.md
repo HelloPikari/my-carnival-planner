@@ -26,10 +26,11 @@ Frontends, MCP servers, and other consumers are separate projects that call this
 This project uses a session log system in `_log/` to maintain continuity between sessions.
 
 ### At the START of every session:
-1. Read `_specs/roadmap.md` to understand the current state of the project
-2. Read the most recent `_log/YYYY-MM-DD*.md` file to pick up where we left off
+1. Read `.claude/memory/MEMORY.md` to load project memory and user preferences
+2. Read `_specs/roadmap.md` to understand the current state of the project
+3. Read the most recent `_log/YYYY-MM-DD*.md` file to pick up where we left off
 
-These two files are your "memory" — treat them as the source of truth for what's been done and what's next.
+These files are your "memory" — treat them as the source of truth for what's been done, how to work, and what's next.
 
 ### At the END of every session (or when the user says they're wrapping up):
 1. **Update `_specs/roadmap.md`** — Check off completed tasks, add new tasks discovered during the session, update the "Last updated" date
