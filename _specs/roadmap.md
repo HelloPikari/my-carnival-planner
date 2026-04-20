@@ -1,6 +1,6 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-04-06
-**Updated by:** Schema Diagram Review Session
+**Last updated:** 2026-04-20
+**Updated by:** Data Layer Implementation Session
 
 ## Phase 1: Foundation (Current)
 > Get the data layer solid. Everything else builds on this.
@@ -9,13 +9,15 @@
 - [x] Explore Nicole's Airtable data to ground schema in real data
 - [x] Set up project structure (CLAUDE.md, roadmap, session logging, memory)
 - [x] Visually diagram full schema for review
-- [ ] Initialize Node.js project (TypeScript, Drizzle, Hono, Postgres dependencies)
-- [ ] Write Drizzle schema files for all tables
-- [ ] Set up local Postgres via Docker
-- [ ] Run Drizzle migrations to create all tables
-- [ ] Write seed script (pull from Nicole's Airtable, map to our schema, insert)
-- [ ] Set up Postgres MCP connector for live querying in sessions
-- [ ] Run test queries to validate relationships and key user questions
+- [x] Initialize Node.js project (TypeScript, Drizzle, Hono, Postgres dependencies)
+- [x] Write Drizzle schema files for all tables (31 tables across 9 domain groups)
+- [x] Set up local Postgres via Docker
+- [x] Run Drizzle migrations to create all tables
+- [x] Write seed script (two-stage: extract from Airtable → load from local JSON)
+- [x] Set up Postgres MCP connector for live querying in sessions
+- [x] Run test queries to validate relationships and key user questions (7/7 passing)
+- [ ] Run Airtable extract to populate local JSON with Nicole's data
+- [ ] Verify load stage with real data (fix field mappings as needed)
 - [ ] Set up Hono API project structure
 - [ ] Auth system (users, sessions, roles) in API layer
 - [ ] Basic CRUD endpoints for core entities
