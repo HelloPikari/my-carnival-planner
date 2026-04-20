@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+!.env.example
 
 # OS files
 .DS_Store
@@ -34,3 +35,6 @@ drizzle/meta/_journal.json.bak
 # Project tooling
 .superpowers/
 .worktrees/
+
+# Airtable extract data
+data/airtable/*.json
