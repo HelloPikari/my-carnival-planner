@@ -15,7 +15,7 @@ import { db } from "../index.js";
 import { carnivalSeasons } from "../schema/index.js";
 import { eq } from "drizzle-orm";
 import { seedStatic } from "./static.js";
-import { loadFetes, loadBands, loadAccommodations } from "./load.js";
+import { loadLocations, loadVendors, loadFetes, loadBands, loadAccommodations } from "./load.js";
 
 async function main() {
   console.log("Starting seed...\n");
@@ -26,18 +26,27 @@ async function main() {
   // Stage 2: Load from local JSON (extracted from Airtable)
   console.log("\nLoading from local JSON...");
 
+  const [season2025] = await db
+    .select()
+    .from(carnivalSeasons)
+    .where(eq(carnivalSeasons.year, 2025));
+
   const [season2026] = await db
     .select()
     .from(carnivalSeasons)
     .where(eq(carnivalSeasons.year, 2026));
 
-  if (!season2026) {
-    throw new Error("2026 season not found — did static seed run?");
+  if (!season2025 || !season2026) {
+    throw new Error("2025/2026 seasons not found — did static seed run?");
   }
 
-  await loadFetes(season2026.id);
-  await loadBands(season2026.id);
-  await loadAccommodations();
+  const seasonIds = { s2025: season2025.id, s2026: season2026.id };
+
+  const locationMap = await loadLocations();
+  const vendorMap = await loadVendors();
+  await loadFetes(seasonIds, vendorMap, locationMap);
+  await loadBands(seasonIds);
+  await loadAccommodations(locationMap);
 
   console.log("\nSeed complete.");
   process.exit(0);
