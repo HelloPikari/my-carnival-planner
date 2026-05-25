@@ -1,15 +1,14 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-04-20
-**Updated by:** Airtable Extraction + Seed Session
+**Last updated:** 2026-05-25
+**Updated by:** Architecture rethink session
 
-## Phase 1: Foundation (Current)
-> Get the data layer solid. Everything else builds on this.
+## Phase 1: Foundation ✓
+> Data layer complete.
 
 - [x] Design database schema (all entities, relationships, conventions decided)
 - [x] Explore Nicole's Airtable data to ground schema in real data
 - [x] Set up project structure (CLAUDE.md, roadmap, session logging, memory)
 - [x] Visually diagram full schema for review
-- [x] Initialize Node.js project (TypeScript, Drizzle, Hono, Postgres dependencies)
 - [x] Write Drizzle schema files for all tables (31 tables across 9 domain groups)
 - [x] Set up local Postgres via Docker
 - [x] Run Drizzle migrations to create all tables
@@ -17,45 +16,51 @@
 - [x] Set up Postgres MCP connector for live querying in sessions
 - [x] Run test queries to validate relationships and key user questions (7/7 passing)
 - [x] Run Airtable extract to populate local JSON with Nicole's data (20 tables, ~1,900 records)
-- [x] Verify load stage with real data (fix field mappings as needed)
-- [ ] Set up Hono API project structure
-- [ ] Auth system (users, sessions, roles) in API layer
-- [ ] Basic CRUD endpoints for core entities
+- [x] Verify load stage with real data
 
-## Phase 2: MVP API
-> A working API that can serve data to any consumer.
+## Phase 2: Next.js + Auth (Current)
+> Convert to Next.js, wire up WorkOS auth, establish the user model.
 
-- [ ] Full REST API for all core entities (carnivals, fetes, bands, accommodations)
-- [ ] Fete/band edition management (create new carnival season, roll forward)
-- [ ] Review submission and moderation workflow
-- [ ] Favorites system
-- [ ] Location-based queries ("what's near me")
-- [ ] Image upload pipeline (DO Spaces + processing service)
-- [ ] Subscription plans and user subscription management
-- [ ] Content gating based on plan entitlements
+- [ ] Convert repo to Next.js (App Router) — add alongside existing Drizzle schema
+- [ ] WorkOS AuthKit integration for all users (consumers + admin)
+- [ ] Update user schema: add `workosId`, `subscriptionPlan` (free/pro/premium), `subscriptionStatus`; remove `passwordHash` and `sessions` table
+- [ ] Run Drizzle migration for schema changes
+- [ ] Auth middleware: protect routes by tier
+- [ ] Admin role flag for Steve + Nicole (domain-locked via WorkOS org)
 
-## Phase 3: Trip Planning
-> The collaborative planning experience that differentiates the product.
+## Phase 3: Admin MCP Server
+> Steve and Nicole manage content through an AI interface.
 
-- [ ] Trip creation and member invitation
-- [ ] Per-member itineraries with platform + custom items
-- [ ] Coordinator role (view/edit all member itineraries)
-- [ ] Itinerary conflict detection (overlapping events)
-- [ ] Cost rollup per person / per trip
-- [ ] Item status tracking (interested → booked → paid → confirmed)
+- [ ] Set up mcp-handler in Next.js API route
+- [ ] WorkOS JWT validation (`withMcpAuth`)
+- [ ] OAuth proxy routes: `/oauth/authorize`, `/oauth/token`, `/oauth/register`
+- [ ] `/.well-known/oauth-protected-resource` and `oauth-authorization-server` endpoints
+- [ ] Read tools: fetes, bands, accommodations, vendors, reviews
+- [ ] Write tools: create/update/delete records (admin only)
+- [ ] JIT user provisioning on first WorkOS login
+- [ ] Deploy to Vercel
 
-## Phase 4: Frontend
-> Visual layer on top of the API for "legacy users" (Nicole's term via Steve).
+## Phase 4: Consumer Web App
+> The self-planning experience for trip-goers.
 
-- [ ] Framework selection (Next.js or similar)
-- [ ] Browse listings (fetes, bands, accommodations) — no account required
-- [ ] User registration and login
-- [ ] Favorites and itinerary builder UI
-- [ ] Review submission UI
-- [ ] Subscription purchase flow
-- [ ] Nicole/admin interface for data management
+- [ ] Browse listings (fetes, bands, accommodations) — Free tier, limited content
+- [ ] Auth/signup flow (WorkOS AuthKit hosted UI)
+- [ ] Subscription purchase and plan management (Stripe)
+- [ ] Content + feature gating by tier (Free / Pro / Premium)
+- [ ] Fete and band detail pages (Pro: full pricing, availability)
+- [ ] Itinerary builder — Pro
+- [ ] Trip creation and group coordination — Pro
+- [ ] Review submission
+- [ ] Image upload pipeline (storage + CDN)
 
-## Phase 5: Commerce
+## Phase 5: Premium AI Features
+> The MCP server as an end-user product.
+
+- [ ] Expose MCP server to Premium tier users (scoped read-only tools)
+- [ ] AI trip planning tools: "build me a fete schedule", "compare band sections"
+- [ ] Itinerary generation and conflict detection via AI
+
+## Phase 6: Commerce
 > Revenue beyond subscriptions.
 
 - [ ] Vendor self-management portal (claim/edit profiles)
@@ -65,30 +70,20 @@
 - [ ] Vendor deals and affiliate link system
 - [ ] Exclusive discount codes for paid members
 
-## Phase 6: MCP Server
-> The long-term play — data as a service for AI assistants.
-
-- [ ] MCP (Model Context Protocol) server exposing carnival planning data
-- [ ] Paid access model for MCP server consumers
-- [ ] User's personal AI assistant can query fetes, bands, accommodations, build itineraries
-
 ## Future / Backlog
-> Ideas captured but not yet prioritized.
 
-- [ ] Multi-carnival expansion (Notting Hill, Rio, etc.) — schema supports it, need local data + people
-- [ ] Automated yearly data ingestion (scraping/collection service for new carnival seasons)
-- [ ] Carnival persona quiz ("what kind of carnival person are you") driving recommendations
-- [ ] Roommate matching (Nicole has an Airtable base for this already)
+- [ ] Multi-carnival expansion (Notting Hill, Rio, etc.)
+- [ ] Automated yearly data ingestion
+- [ ] Carnival persona quiz driving recommendations
+- [ ] Roommate matching (Nicole has Airtable base for this)
 - [ ] Transportation management
-- [ ] Concierge tier with direct planner access (video call, WhatsApp)
-- [ ] Vendor analytics dashboard (how many views, favorites, conversions)
-- [ ] Social proof / "liked by first-timers" tagging based on user demographics
-- [ ] Nicole's internal operations migration (client management, invoicing — separate from public platform)
+- [ ] Concierge tier (video call, WhatsApp with planner)
+- [ ] Vendor analytics dashboard
+- [ ] Social proof tagging ("liked by first-timers")
 
 ---
 
 ## Notes
-- This roadmap is a living document. Agents should review it at session start and update it when new requirements surface.
-- Phases are sequential in priority but may overlap in execution.
 - Trinidad Carnival is the sole focus until the platform is validated.
 - "Ship small, iterate fast" — every phase should produce something usable.
+- Stack: Next.js (App Router) on Vercel, Drizzle + Postgres on DigitalOcean, WorkOS auth.
