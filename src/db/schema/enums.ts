@@ -119,6 +119,12 @@ export const subscriptionTierEnum = pgEnum("subscription_tier", [
   "premium",
 ]);
 
+export const subscriptionPlanEnum = pgEnum("subscription_plan", [
+  "free",
+  "pro",
+  "premium",
+]);
+
 export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "active",
   "cancelled",
