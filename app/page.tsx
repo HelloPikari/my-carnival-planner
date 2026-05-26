@@ -1,4 +1,4 @@
-import { withAuth } from "@workos-inc/authkit-nextjs";
+import { withAuth, signOut } from "@workos-inc/authkit-nextjs";
 
 export default async function HomePage() {
   const { user } = await withAuth();
@@ -16,6 +16,9 @@ export default async function HomePage() {
     <main>
       <h1>My Carnival Planner</h1>
       <p>Welcome, {user.email}</p>
+      <form action={signOut}>
+        <button type="submit">Sign out</button>
+      </form>
     </main>
   );
 }
