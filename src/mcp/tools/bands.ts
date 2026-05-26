@@ -37,7 +37,12 @@ export async function queryBandById(id: string) {
           .where(inArray(bandSections.bandThemeId, themes.map((t) => t.id)))
       : [];
 
-  return { ...band, themes, sections };
+  const themesWithSections = themes.map((t) => ({
+    ...t,
+    sections: sections.filter((s) => s.bandThemeId === t.id),
+  }));
+
+  return { ...band, themes: themesWithSections };
 }
 
 export function registerBandTools(server: McpServer) {
@@ -52,10 +57,12 @@ export function registerBandTools(server: McpServer) {
       },
     },
     async (input) => {
-      const results = await queryBands(input);
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }],
-      };
+      try {
+        const results = await queryBands(input);
+        return { content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching bands" }], isError: true };
+      }
     }
   );
 
@@ -63,19 +70,19 @@ export function registerBandTools(server: McpServer) {
     "get_band",
     {
       title: "Get Band",
-      description: "Get full band details including themes and sections",
+      description: "Get full band details including themes and sections (sections are nested within each theme)",
       inputSchema: {
         id: z.string().uuid().describe("Band ID from list_bands"),
       },
     },
     async ({ id }) => {
-      const band = await queryBandById(id);
-      if (!band) {
-        return { content: [{ type: "text" as const, text: "Band not found" }] };
+      try {
+        const band = await queryBandById(id);
+        if (!band) return { content: [{ type: "text" as const, text: "Band not found" }] };
+        return { content: [{ type: "text" as const, text: JSON.stringify(band, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching band" }], isError: true };
       }
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(band, null, 2) }],
-      };
     }
   );
 }

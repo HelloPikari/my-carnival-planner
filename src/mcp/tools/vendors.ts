@@ -44,10 +44,12 @@ export function registerVendorTools(server: McpServer) {
       },
     },
     async (input) => {
-      const results = await queryVendors(input);
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }],
-      };
+      try {
+        const results = await queryVendors(input);
+        return { content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching vendors" }], isError: true };
+      }
     }
   );
 
@@ -61,13 +63,13 @@ export function registerVendorTools(server: McpServer) {
       },
     },
     async ({ id }) => {
-      const vendor = await queryVendorById(id);
-      if (!vendor) {
-        return { content: [{ type: "text" as const, text: "Vendor not found" }] };
+      try {
+        const vendor = await queryVendorById(id);
+        if (!vendor) return { content: [{ type: "text" as const, text: "Vendor not found" }] };
+        return { content: [{ type: "text" as const, text: JSON.stringify(vendor, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching vendor" }], isError: true };
       }
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(vendor, null, 2) }],
-      };
     }
   );
 }

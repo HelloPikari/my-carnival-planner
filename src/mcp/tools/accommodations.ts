@@ -48,10 +48,12 @@ export function registerAccommodationTools(server: McpServer) {
       },
     },
     async (input) => {
-      const results = await queryAccommodations(input);
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }],
-      };
+      try {
+        const results = await queryAccommodations(input);
+        return { content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching accommodations" }], isError: true };
+      }
     }
   );
 
@@ -65,13 +67,13 @@ export function registerAccommodationTools(server: McpServer) {
       },
     },
     async ({ id }) => {
-      const accommodation = await queryAccommodationById(id);
-      if (!accommodation) {
-        return { content: [{ type: "text" as const, text: "Accommodation not found" }] };
+      try {
+        const accommodation = await queryAccommodationById(id);
+        if (!accommodation) return { content: [{ type: "text" as const, text: "Accommodation not found" }] };
+        return { content: [{ type: "text" as const, text: JSON.stringify(accommodation, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching accommodation" }], isError: true };
       }
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(accommodation, null, 2) }],
-      };
     }
   );
 }

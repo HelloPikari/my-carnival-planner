@@ -1,17 +1,16 @@
 import { db } from "@/src/db/index.js";
 import { fetes, feteEditions } from "@/src/db/schema/fetes.js";
-import { eq, ilike, and } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export async function queryFetes(input: { search?: string; limit?: number }) {
   const { search, limit = 20 } = input;
-  const conditions = search ? [ilike(fetes.name, `%${search}%`)] : [];
 
   return db
     .select({ id: fetes.id, name: fetes.name, category: fetes.category })
     .from(fetes)
-    .where(conditions.length ? and(...conditions) : undefined)
+    .where(search ? ilike(fetes.name, `%${search}%`) : undefined)
     .limit(limit);
 }
 
@@ -45,10 +44,12 @@ export function registerFeteTools(server: McpServer) {
       },
     },
     async (input) => {
-      const results = await queryFetes(input);
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }],
-      };
+      try {
+        const results = await queryFetes(input);
+        return { content: [{ type: "text" as const, text: JSON.stringify(results, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching fetes" }], isError: true };
+      }
     }
   );
 
@@ -62,13 +63,13 @@ export function registerFeteTools(server: McpServer) {
       },
     },
     async ({ id }) => {
-      const fete = await queryFeteById(id);
-      if (!fete) {
-        return { content: [{ type: "text" as const, text: "Fete not found" }] };
+      try {
+        const fete = await queryFeteById(id);
+        if (!fete) return { content: [{ type: "text" as const, text: "Fete not found" }] };
+        return { content: [{ type: "text" as const, text: JSON.stringify(fete, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text" as const, text: "Error fetching fete" }], isError: true };
       }
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(fete, null, 2) }],
-      };
     }
   );
 }
