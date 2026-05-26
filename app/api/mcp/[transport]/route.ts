@@ -1,29 +1,16 @@
 import { createMcpHandler, withMcpAuth } from "mcp-handler";
-import { verifyMcpToken } from "@/src/mcp/auth";
-import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
+import { verifyMcpToken } from "@/src/mcp/auth.js";
+import { registerFeteTools } from "@/src/mcp/tools/fetes.js";
+import { registerBandTools } from "@/src/mcp/tools/bands.js";
+import { registerAccommodationTools } from "@/src/mcp/tools/accommodations.js";
+import { registerVendorTools } from "@/src/mcp/tools/vendors.js";
 
 const handler = createMcpHandler(
   (server) => {
-    server.registerTool(
-      "ping",
-      {
-        title: "Ping",
-        description:
-          "Health check — returns the authenticated user's email and plan",
-        inputSchema: {},
-      },
-      async (_input, extra: { authInfo?: AuthInfo }) => {
-        const email =
-          (extra.authInfo?.extra?.email as string | undefined) ?? "unknown";
-        const plan =
-          (extra.authInfo?.extra?.plan as string | undefined) ?? "unknown";
-        return {
-          content: [
-            { type: "text" as const, text: `pong — ${email} (${plan})` },
-          ],
-        };
-      }
-    );
+    registerFeteTools(server);
+    registerBandTools(server);
+    registerAccommodationTools(server);
+    registerVendorTools(server);
   },
   {},
   { basePath: "/api", maxDuration: 60 }
