@@ -1,7 +1,7 @@
-import { withAuth, getSignInUrl } from "@workos-inc/authkit-nextjs";
+import { getUser, getSignInUrl } from "@workos-inc/authkit-nextjs";
 
 export default async function HomePage() {
-  const { user } = await withAuth();
+  const { user } = await getUser();
 
   if (!user) {
     const signInUrl = await getSignInUrl();
