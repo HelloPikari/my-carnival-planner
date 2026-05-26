@@ -3,6 +3,11 @@ import { withAuth, signOut } from "@workos-inc/authkit-nextjs";
 export default async function HomePage() {
   const { user } = await withAuth();
 
+  async function handleSignOut() {
+    "use server";
+    await signOut();
+  }
+
   if (!user) {
     return (
       <main>
@@ -16,7 +21,7 @@ export default async function HomePage() {
     <main>
       <h1>My Carnival Planner</h1>
       <p>Welcome, {user.email}</p>
-      <form action={signOut}>
+      <form action={handleSignOut}>
         <button type="submit">Sign out</button>
       </form>
     </main>
