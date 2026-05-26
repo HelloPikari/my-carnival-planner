@@ -1,6 +1,6 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-05-25
-**Updated by:** Architecture rethink session
+**Last updated:** 2026-05-26
+**Updated by:** Phase 2+3 implementation session
 
 ## Phase 1: Foundation ✓
 > Data layer complete.
@@ -18,27 +18,20 @@
 - [x] Run Airtable extract to populate local JSON with Nicole's data (20 tables, ~1,900 records)
 - [x] Verify load stage with real data
 
-## Phase 2: Next.js + Auth (Current)
-> Convert to Next.js, wire up WorkOS auth, establish the user model.
+## Phase 2+3: Next.js + Auth + Admin MCP Server ✓ (pending deploy)
+> Next.js App Router, WorkOS auth, and admin MCP server — all code complete.
 
-- [ ] Convert repo to Next.js (App Router) — add alongside existing Drizzle schema
-- [ ] WorkOS AuthKit integration for all users (consumers + admin)
-- [ ] Update user schema: add `workosId`, `subscriptionPlan` (free/pro/premium), `subscriptionStatus`; remove `passwordHash` and `sessions` table
-- [ ] Run Drizzle migration for schema changes
-- [ ] Auth middleware: protect routes by tier
-- [ ] Admin role flag for Steve + Nicole (domain-locked via WorkOS org)
-
-## Phase 3: Admin MCP Server
-> Steve and Nicole manage content through an AI interface.
-
-- [ ] Set up mcp-handler in Next.js API route
-- [ ] WorkOS JWT validation (`withMcpAuth`)
-- [ ] OAuth proxy routes: `/oauth/authorize`, `/oauth/token`, `/oauth/register`
-- [ ] `/.well-known/oauth-protected-resource` and `oauth-authorization-server` endpoints
-- [ ] Read tools: fetes, bands, accommodations, vendors, reviews
-- [ ] Write tools: create/update/delete records (admin only)
-- [ ] JIT user provisioning on first WorkOS login
-- [ ] Deploy to Vercel
+- [x] Convert repo to Next.js 15 (App Router) alongside existing Drizzle schema
+- [x] WorkOS AuthKit integration (middleware, callback route, AuthKitProvider)
+- [x] Update user schema: `workosId`, `subscriptionPlan` (free/pro/premium), `subscriptionStatus`; dropped `passwordHash`, `sessions`, `roles`
+- [x] Run Drizzle migration (applied manually via psql)
+- [x] JIT user provisioning on first WorkOS login (`src/mcp/provision.ts`)
+- [x] OAuth proxy routes: `api/oauth/authorize`, `api/oauth/token`, `api/oauth/register`
+- [x] RFC 8414 + RFC 9728 well-known discovery endpoints (with CORS)
+- [x] MCP server with WorkOS JWT auth (`withMcpAuth`, JWKS validation, audience check)
+- [x] MCP read tools: list_fetes, get_fete, list_bands, get_band, list_accommodations, get_accommodation, list_vendors, get_vendor
+- [x] Admin write tools: create_fete, update_fete_edition_status (gated by MCP_ADMIN_EMAILS)
+- [ ] **Deploy to Vercel** — see Task 9 in `_specs/plans/2026-05-25-nextjs-workos-mcp.md`
 
 ## Phase 4: Consumer Web App
 > The self-planning experience for trip-goers.
