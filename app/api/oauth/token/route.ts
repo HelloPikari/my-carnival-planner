@@ -8,16 +8,36 @@ async function callWorkosAuthenticate(body: Record<string, string>) {
       ...body,
     }),
   });
-  if (!res.ok) throw new Error(`WorkOS authenticate failed: ${await res.text()}`);
+  if (!res.ok) {
+    const upstream = await res.text();
+    console.error("WorkOS authenticate error:", upstream);
+    throw new Error("Authentication failed");
+  }
   return res.json();
+}
+
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new Response(null, { headers: CORS_HEADERS });
 }
 
 export async function POST(req: Request) {
   const contentType = req.headers.get("content-type") ?? "";
-  const text = await req.text();
-  const params = contentType.includes("application/json")
-    ? new URLSearchParams(JSON.parse(text) as Record<string, string>)
-    : new URLSearchParams(text);
+
+  let params: URLSearchParams;
+  try {
+    const text = await req.text();
+    params = contentType.includes("application/json")
+      ? new URLSearchParams(JSON.parse(text) as Record<string, string>)
+      : new URLSearchParams(text);
+  } catch {
+    return Response.json({ error: "invalid_request" }, { status: 400, headers: CORS_HEADERS });
+  }
 
   try {
     const grantType = params.get("grant_type");
@@ -36,14 +56,14 @@ export async function POST(req: Request) {
         refresh_token: params.get("refresh_token") ?? "",
       });
     } else {
-      return Response.json({ error: "unsupported_grant_type" }, { status: 400 });
+      return Response.json({ error: "unsupported_grant_type" }, { status: 400, headers: CORS_HEADERS });
     }
 
-    return Response.json(token);
+    return Response.json(token, { headers: CORS_HEADERS });
   } catch (err) {
     return Response.json(
       { error: "server_error", error_description: (err as Error).message },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     );
   }
 }

@@ -1,8 +1,9 @@
 export async function GET() {
-  const resource = process.env.OAUTH_ISSUER ?? "https://my-carnival-planner.vercel.app";
-  const authServer = process.env.WORKOS_ISSUER ?? "https://api.workos.com";
+  const issuer = process.env.OAUTH_ISSUER ?? "https://my-carnival-planner.vercel.app";
 
-  return Response.json({ resource, authorization_servers: [authServer] });
+  // authorization_servers points at our own proxy (not WorkOS directly),
+  // so clients discover /api/oauth/* endpoints and route through us.
+  return Response.json({ resource: issuer, authorization_servers: [issuer] });
 }
 
 export async function OPTIONS() {
