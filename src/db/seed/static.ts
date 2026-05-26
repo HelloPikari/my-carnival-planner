@@ -1,20 +1,8 @@
 import { db } from "../index.js";
-import { roles, subscriptionPlans, planEntitlements, carnivals, carnivalSeasons, locations } from "../schema/index.js";
+import { subscriptionPlans, planEntitlements, carnivals, carnivalSeasons, locations } from "../schema/index.js";
 
 export async function seedStatic() {
   console.log("Seeding static data...");
-
-  // Roles
-  const [adminRole, userRole, vendorRole] = await db
-    .insert(roles)
-    .values([
-      { name: "admin", description: "Full platform access" },
-      { name: "user", description: "Standard registered user" },
-      { name: "vendor", description: "Business owner managing listings" },
-    ])
-    .returning();
-
-  console.log(`  Created ${3} roles`);
 
   // Trinidad location (area type for the carnival)
   const [trinidadLocation] = await db
