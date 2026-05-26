@@ -82,7 +82,7 @@ export function registerAdminTools(server: McpServer, adminEmails: string[]) {
       try {
         const [updated] = await db
           .update(feteEditions)
-          .set({ status: status as "draft" | "published" | "cancelled" | "completed" })
+          .set({ status })
           .where(eq(feteEditions.id, editionId))
           .returning();
         if (!updated) {

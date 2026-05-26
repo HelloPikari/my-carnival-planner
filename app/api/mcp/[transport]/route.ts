@@ -8,7 +8,7 @@ import { registerAdminTools } from "@/src/mcp/tools/admin.js";
 
 const ADMIN_EMAILS = (process.env.MCP_ADMIN_EMAILS ?? "")
   .split(",")
-  .map((e) => e.trim())
+  .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
 const handler = createMcpHandler(
