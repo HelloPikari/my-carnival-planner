@@ -7,7 +7,9 @@ let _jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 
 function getJWKS() {
   if (!_jwks) {
-    _jwks = createRemoteJWKSet(new URL(process.env.WORKOS_JWKS_URI!));
+    const uri = process.env.WORKOS_JWKS_URI;
+    if (!uri) throw new Error("WORKOS_JWKS_URI is not set");
+    _jwks = createRemoteJWKSet(new URL(uri));
   }
   return _jwks;
 }
@@ -19,6 +21,7 @@ export async function verifyMcpToken(_req: Request, bearerToken?: string) {
     const { payload } = await jwtVerify(bearerToken, getJWKS(), {
       algorithms: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512"],
       issuer: process.env.WORKOS_ISSUER,
+      audience: process.env.WORKOS_CLIENT_ID,
     });
 
     const workosId = payload.sub as string;
@@ -29,12 +32,13 @@ export async function verifyMcpToken(_req: Request, bearerToken?: string) {
       .limit(1)
       .then((r) => r[0]);
 
-    if (!user) return undefined;
+    if (!user || user.subscriptionStatus !== "active") return undefined;
 
     return {
       token: bearerToken,
       scopes: [user.subscriptionPlan],
       clientId: workosId,
+      expiresAt: payload.exp,
       extra: {
         userId: user.id,
         email: user.email,
