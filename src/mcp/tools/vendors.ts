@@ -1,11 +1,15 @@
 import { db } from "@/src/db/index.js";
 import { vendors } from "@/src/db/schema/vendors.js";
-import { eq, ilike } from "drizzle-orm";
+import { eq, ilike, and } from "drizzle-orm";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-export async function queryVendors(input: { search?: string; limit?: number }) {
-  const { search, limit = 20 } = input;
+export async function queryVendors(input: { type?: string; search?: string; limit?: number }) {
+  const { type, search, limit = 20 } = input;
+  const conditions = [];
+  if (search) conditions.push(ilike(vendors.name, `%${search}%`));
+  if (type) conditions.push(eq(vendors.type, type as "organizer" | "band" | "hotel" | "designer"));
+
   return db
     .select({
       id: vendors.id,
@@ -14,7 +18,7 @@ export async function queryVendors(input: { search?: string; limit?: number }) {
       website: vendors.website,
     })
     .from(vendors)
-    .where(search ? ilike(vendors.name, `%${search}%`) : undefined)
+    .where(conditions.length ? and(...conditions) : undefined)
     .limit(limit);
 }
 
@@ -32,8 +36,9 @@ export function registerVendorTools(server: McpServer) {
     "list_vendors",
     {
       title: "List Vendors",
-      description: "Search and list vendors. Returns id, name, type, and website.",
+      description: "Search and list vendors. Filter by type: organizer, band, hotel, designer.",
       inputSchema: {
+        type: z.enum(["organizer", "band", "hotel", "designer"]).optional().describe("Filter vendors by type"),
         search: z.string().optional().describe("Filter vendors by name"),
         limit: z.number().int().min(1).max(100).default(20),
       },
