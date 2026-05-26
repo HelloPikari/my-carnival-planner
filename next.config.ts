@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   eslint: { ignoreDuringBuilds: true },
   webpack: (config) => {
     config.resolve.extensionAlias = {
+      ...config.resolve.extensionAlias,
       ".js": [".ts", ".tsx", ".js"],
     };
     return config;

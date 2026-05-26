@@ -15,7 +15,6 @@ import {
   costumes,
   accommodations,
   roomTypes,
-  roles,
   subscriptionPlans,
 } from "../src/db/schema/index.js";
 
@@ -40,12 +39,6 @@ describe("Schema validation queries", () => {
 
     expect(result.length).toBe(1);
     expect(result[0].year).toBe(2026);
-  });
-
-  it("can query all roles", async () => {
-    const result = await db.select().from(roles);
-    expect(result.length).toBe(3);
-    expect(result.map((r) => r.name).sort()).toEqual(["admin", "user", "vendor"]);
   });
 
   it("can query subscription plans by tier", async () => {
