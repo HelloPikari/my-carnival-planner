@@ -1,6 +1,6 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-05-26
-**Updated by:** Phase 2+3 implementation session
+**Last updated:** 2026-05-27
+**Updated by:** Deployment + infrastructure session
 
 ## Phase 1: Foundation ✓
 > Data layer complete.
@@ -18,8 +18,8 @@
 - [x] Run Airtable extract to populate local JSON with Nicole's data (20 tables, ~1,900 records)
 - [x] Verify load stage with real data
 
-## Phase 2+3: Next.js + Auth + Admin MCP Server ✓ (pending deploy)
-> Next.js App Router, WorkOS auth, and admin MCP server — all code complete.
+## Phase 2+3: Next.js + Auth + Admin MCP Server ✓
+> Next.js App Router, WorkOS auth, admin MCP server, and production deploy — complete.
 
 - [x] Convert repo to Next.js 15 (App Router) alongside existing Drizzle schema
 - [x] WorkOS AuthKit integration (middleware, callback route, AuthKitProvider)
@@ -31,7 +31,9 @@
 - [x] MCP server with WorkOS JWT auth (`withMcpAuth`, JWKS validation, audience check)
 - [x] MCP read tools: list_fetes, get_fete, list_bands, get_band, list_accommodations, get_accommodation, list_vendors, get_vendor
 - [x] Admin write tools: create_fete, update_fete_edition_status (gated by MCP_ADMIN_EMAILS)
-- [ ] **Deploy to Vercel** — see Task 9 in `_specs/plans/2026-05-25-nextjs-workos-mcp.md`
+- [x] Deploy to Vercel — production at https://mycarnivalplanner.app
+- [x] Production Postgres on DigitalOcean droplet, secured via nginx TCP proxy + Postgres SSL
+- [ ] Test MCP server end-to-end with Claude Desktop + mcp-remote
 
 ## Phase 4: Consumer Web App
 > The self-planning experience for trip-goers.
