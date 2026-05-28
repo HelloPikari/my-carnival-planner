@@ -1,5 +1,5 @@
 export async function GET() {
-  const issuer = process.env.OAUTH_ISSUER ?? "https://my-carnival-planner.vercel.app";
+  const issuer = process.env.OAUTH_ISSUER ?? "https://mycarnivalplanner.app";
 
   // authorization_servers points at our own proxy (not WorkOS directly),
   // so clients discover /api/oauth/* endpoints and route through us.

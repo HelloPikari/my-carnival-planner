@@ -90,6 +90,23 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 Start `npm run dev`, restart Claude Desktop, and complete the auth flow when prompted.
 
+### Connecting to production (Claude Desktop)
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "carnival": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mycarnivalplanner.app/api/mcp"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop and complete the auth flow when prompted.
+
 ### Available tools
 
 **Read (all authenticated users):**
