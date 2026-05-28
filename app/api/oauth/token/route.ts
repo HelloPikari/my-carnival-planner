@@ -71,6 +71,18 @@ export async function POST(req: Request) {
         grant_type: "refresh_token",
         refresh_token: params.get("refresh_token") ?? "",
       });
+      const refreshResp = token as Record<string, unknown>;
+      const refreshAccessToken = refreshResp.access_token as string | undefined;
+      if (refreshAccessToken) {
+        try {
+          const payload = JSON.parse(Buffer.from(refreshAccessToken.split(".")[1], "base64url").toString());
+          console.log("[oauth/token] refresh token iss:", payload.iss);
+          if (process.env.WORKOS_ISSUER && payload.iss !== process.env.WORKOS_ISSUER) {
+            console.error("[oauth/token] refresh token iss mismatch — rejecting to force re-auth");
+            return Response.json({ error: "invalid_grant" }, { status: 400, headers: CORS_HEADERS });
+          }
+        } catch { /* non-JWT refresh token, pass through */ }
+      }
       console.log("[oauth/token] refresh_token exchange succeeded");
     } else {
       return Response.json({ error: "unsupported_grant_type" }, { status: 400, headers: CORS_HEADERS });
