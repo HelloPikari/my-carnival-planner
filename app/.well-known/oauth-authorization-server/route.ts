@@ -1,5 +1,5 @@
 export async function GET() {
-  const issuer = process.env.OAUTH_ISSUER ?? "https://my-carnival-planner.vercel.app";
+  const issuer = process.env.OAUTH_ISSUER ?? "https://mycarnivalplanner.app";
 
   return Response.json({
     issuer,
