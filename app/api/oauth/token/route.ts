@@ -51,11 +51,19 @@ export async function POST(req: Request) {
         redirect_uri: params.get("redirect_uri") ?? "",
         ...(params.get("code_verifier") ? { code_verifier: params.get("code_verifier")! } : {}),
       });
-      try {
-        const parts = ((token as Record<string, unknown>).access_token as string).split(".");
-        const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
-        console.log("[oauth/token] authorization_code token iss:", payload.iss, "aud:", payload.aud);
-      } catch { /* not a JWT or no access_token */ }
+      const resp = token as Record<string, unknown>;
+      console.log("[oauth/token] WorkOS response keys:", Object.keys(resp));
+      const accessToken = resp.access_token as string | undefined;
+      if (accessToken) {
+        try {
+          const payload = JSON.parse(Buffer.from(accessToken.split(".")[1], "base64url").toString());
+          console.log("[oauth/token] access_token iss:", payload.iss, "aud:", payload.aud);
+        } catch (e) {
+          console.log("[oauth/token] access_token not decodable:", (e as Error).message, "preview:", accessToken.substring(0, 40));
+        }
+      } else {
+        console.log("[oauth/token] no access_token in WorkOS response");
+      }
       console.log("[oauth/token] authorization_code exchange succeeded");
     } else if (grantType === "refresh_token") {
       console.log("[oauth/token] refresh_token exchange");
