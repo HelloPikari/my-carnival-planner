@@ -21,8 +21,16 @@ export async function verifyMcpToken(_req: Request, bearerToken?: string) {
     const { payload } = await jwtVerify(bearerToken, getJWKS(), {
       algorithms: ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512"],
       issuer: process.env.WORKOS_ISSUER,
-      audience: process.env.WORKOS_CLIENT_ID,
+      // No audience check — WorkOS does not emit aud by default.
+      // Use the client_id claim below to isolate per-app tokens.
     });
+
+    // Reject tokens issued for a different application in the same WorkOS environment.
+    // iss is environment-level (always the Default app); client_id is the per-app boundary.
+    if (payload.client_id !== process.env.WORKOS_CLIENT_ID) {
+      console.error("[MCP auth] token client_id mismatch:", payload.client_id, "expected:", process.env.WORKOS_CLIENT_ID);
+      return undefined;
+    }
 
     const workosId = payload.sub as string;
     const user = await db
