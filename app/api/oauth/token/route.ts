@@ -51,6 +51,11 @@ export async function POST(req: Request) {
         redirect_uri: params.get("redirect_uri") ?? "",
         ...(params.get("code_verifier") ? { code_verifier: params.get("code_verifier")! } : {}),
       });
+      try {
+        const parts = ((token as Record<string, unknown>).access_token as string).split(".");
+        const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+        console.log("[oauth/token] authorization_code token iss:", payload.iss, "aud:", payload.aud);
+      } catch { /* not a JWT or no access_token */ }
       console.log("[oauth/token] authorization_code exchange succeeded");
     } else if (grantType === "refresh_token") {
       console.log("[oauth/token] refresh_token exchange");

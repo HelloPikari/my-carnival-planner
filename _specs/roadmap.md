@@ -34,6 +34,7 @@
 - [x] Deploy to Vercel — production at https://mycarnivalplanner.app
 - [x] Production Postgres on DigitalOcean droplet, secured via nginx TCP proxy + Postgres SSL
 - [ ] Test MCP server end-to-end with Claude Desktop + mcp-remote
+- [ ] MCP tool call logging — who called what tool, when, with what args (usage tracking + admin audit trail)
 
 ## Phase 4: Consumer Web App
 > The self-planning experience for trip-goers.
