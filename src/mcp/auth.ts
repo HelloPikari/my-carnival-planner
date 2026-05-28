@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify, decodeJwt } from "jose";
 import { db } from "@/src/db/index.js";
 import { users } from "@/src/db/schema/users.js";
 import { eq } from "drizzle-orm";
@@ -32,8 +32,16 @@ export async function verifyMcpToken(_req: Request, bearerToken?: string) {
       .limit(1)
       .then((r) => r[0]);
 
-    if (!user || user.subscriptionStatus !== "active") return undefined;
+    if (!user) {
+      console.error("[MCP auth] no user found for workosId:", workosId);
+      return undefined;
+    }
+    if (user.subscriptionStatus !== "active") {
+      console.error("[MCP auth] user not active:", user.email, user.subscriptionStatus);
+      return undefined;
+    }
 
+    console.log("[MCP auth] authenticated:", user.email, user.subscriptionPlan);
     return {
       token: bearerToken,
       scopes: [user.subscriptionPlan],
@@ -45,7 +53,20 @@ export async function verifyMcpToken(_req: Request, bearerToken?: string) {
         plan: user.subscriptionPlan,
       },
     };
-  } catch {
+  } catch (err) {
+    const msg = (err as Error).message;
+    try {
+      const claims = decodeJwt(bearerToken);
+      console.error("[MCP auth] token validation failed:", msg, {
+        iss: claims.iss,
+        aud: claims.aud,
+        exp: claims.exp,
+        expectedIss: process.env.WORKOS_ISSUER,
+        expectedAud: process.env.WORKOS_CLIENT_ID,
+      });
+    } catch {
+      console.error("[MCP auth] token validation failed (undecodable):", msg);
+    }
     return undefined;
   }
 }

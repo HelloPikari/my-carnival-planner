@@ -44,17 +44,21 @@ export async function POST(req: Request) {
 
     let token: unknown;
     if (grantType === "authorization_code") {
+      console.log("[oauth/token] authorization_code exchange, redirect_uri:", params.get("redirect_uri"), "code_verifier present:", !!params.get("code_verifier"));
       token = await callWorkosAuthenticate({
         grant_type: "authorization_code",
         code: params.get("code") ?? "",
         redirect_uri: params.get("redirect_uri") ?? "",
         ...(params.get("code_verifier") ? { code_verifier: params.get("code_verifier")! } : {}),
       });
+      console.log("[oauth/token] authorization_code exchange succeeded");
     } else if (grantType === "refresh_token") {
+      console.log("[oauth/token] refresh_token exchange");
       token = await callWorkosAuthenticate({
         grant_type: "refresh_token",
         refresh_token: params.get("refresh_token") ?? "",
       });
+      console.log("[oauth/token] refresh_token exchange succeeded");
     } else {
       return Response.json({ error: "unsupported_grant_type" }, { status: 400, headers: CORS_HEADERS });
     }
