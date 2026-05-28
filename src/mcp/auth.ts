@@ -32,7 +32,14 @@ export async function verifyMcpToken(_req: Request, bearerToken?: string) {
       .limit(1)
       .then((r) => r[0]);
 
-    if (!user || user.subscriptionStatus !== "active") return undefined;
+    if (!user) {
+      console.error("[MCP auth] no user found for workosId:", workosId);
+      return undefined;
+    }
+    if (user.subscriptionStatus !== "active") {
+      console.error("[MCP auth] user not active:", user.email, user.subscriptionStatus);
+      return undefined;
+    }
 
     return {
       token: bearerToken,
@@ -45,7 +52,8 @@ export async function verifyMcpToken(_req: Request, bearerToken?: string) {
         plan: user.subscriptionPlan,
       },
     };
-  } catch {
+  } catch (err) {
+    console.error("[MCP auth] token validation failed:", (err as Error).message);
     return undefined;
   }
 }
