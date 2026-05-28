@@ -27,10 +27,9 @@ For any application in this WorkOS environment, `WORKOS_ISSUER` and `WORKOS_JWKS
 
 ```bash
 # Per-environment (same value across all apps in this WorkOS account)
-WORKOS_ISSUER=client_01KREFHFZRYWAB2CSZED2773VD
-# ⚠️ The iss claim in WorkOS JWTs is the bare client_id string, not a URL.
-# Verify by decoding a real token: Buffer.from(token.split('.')[1], 'base64url').toString()
-# and reading the 'iss' field. Use that exact string here.
+WORKOS_ISSUER=https://api.workos.com/user_management/client_01KREFHFZRYWAB2CSZED2773VD
+# Format: https://api.workos.com/user_management/{default_app_client_id}
+# Verified from live token: payload.iss = "https://api.workos.com/user_management/client_01KREFHFZRYWAB2CSZED2773VD"
 
 WORKOS_JWKS_URI=https://api.workos.com/sso/jwks/client_01KREFHFZRYWAB2CSZED2773VD
 # Use /sso/jwks/ (NOT /user_management/jwks/ — that 404s)
@@ -54,7 +53,7 @@ Each MCP server in a new application needs its own deployment with:
 
 | Variable | Value |
 |---|---|
-| `WORKOS_ISSUER` | Default app's `client_id` (bare string, no URL prefix) — **same for all apps** |
+| `WORKOS_ISSUER` | `https://api.workos.com/user_management/{default_client_id}` — **same for all apps** |
 | `WORKOS_JWKS_URI` | `https://api.workos.com/sso/jwks/{default_client_id}` — **same for all apps** |
 | `WORKOS_CLIENT_ID` | This app's `client_id` — **unique per app** |
 | `WORKOS_API_KEY` | API key — environment-level credential; can share or use per-app |
@@ -97,7 +96,7 @@ if (payload.client_id !== process.env.WORKOS_CLIENT_ID) {
 2. **WorkOS does not emit `aud` by default.** Do not pass `audience` to `jwtVerify` unless you have a JWT Template configured that adds it.
 3. **Use the `client_id` JWT claim to distinguish which app a token was issued for.** This is the per-app isolation boundary.
 4. **`WORKOS_JWKS_URI` uses `/sso/jwks/`** (not `/user_management/jwks/` — 404s). Use Default app's client_id in the path.
-5. **The `iss` claim is the bare client_id string**, not a URL. The format `https://api.workos.com/user_management/<client-id>` appears in some docs but does not match the actual JWT payload on this account.
+5. **The `iss` format is `https://api.workos.com/user_management/{client_id}`** — verified from live token. Use the Default app's client_id in the path, not this app's.
 
 ---
 
