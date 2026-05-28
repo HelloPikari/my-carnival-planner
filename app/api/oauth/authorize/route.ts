@@ -10,5 +10,6 @@ export async function GET(req: Request) {
   }
   target.searchParams.set("provider", "authkit");
 
+  console.log("[oauth/authorize] redirect_uri:", incoming.searchParams.get("redirect_uri"));
   return Response.redirect(target.toString(), 302);
 }
