@@ -1,3 +1,5 @@
+import { findOrProvisionUser } from "@/src/mcp/provision.js";
+
 async function callWorkosAuthenticate(body: Record<string, string>) {
   const res = await fetch("https://api.workos.com/user_management/authenticate", {
     method: "POST",
@@ -65,6 +67,20 @@ export async function POST(req: Request) {
         console.log("[oauth/token] no access_token in WorkOS response");
       }
       console.log("[oauth/token] authorization_code exchange succeeded");
+      const workosUser = (resp.user as { id: string; email: string; first_name?: string; last_name?: string } | undefined);
+      if (workosUser?.id && workosUser?.email) {
+        try {
+          await findOrProvisionUser({
+            id: workosUser.id,
+            email: workosUser.email,
+            firstName: workosUser.first_name,
+            lastName: workosUser.last_name,
+          });
+          console.log("[oauth/token] user provisioned:", workosUser.email);
+        } catch (err) {
+          console.error("[oauth/token] Failed to provision user:", err);
+        }
+      }
     } else if (grantType === "refresh_token") {
       console.log("[oauth/token] refresh_token exchange");
       token = await callWorkosAuthenticate({
