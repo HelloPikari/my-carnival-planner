@@ -1,5 +1,5 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-05-27
+**Last updated:** 2026-05-28
 **Updated by:** Deployment + infrastructure session
 
 ## Phase 1: Foundation ✓
@@ -33,7 +33,7 @@
 - [x] Admin write tools: create_fete, update_fete_edition_status (gated by MCP_ADMIN_EMAILS)
 - [x] Deploy to Vercel — production at https://mycarnivalplanner.app
 - [x] Production Postgres on DigitalOcean droplet, secured via nginx TCP proxy + Postgres SSL
-- [ ] Test MCP server end-to-end with Claude Desktop + mcp-remote
+- [x] Test MCP server end-to-end with Claude Desktop + mcp-remote
 - [ ] MCP tool call logging — who called what tool, when, with what args (usage tracking + admin audit trail)
 
 ## Phase 4: Consumer Web App
