@@ -112,3 +112,37 @@ export function missingGatedFields(trip: ActiveTripRow): MissingContextField[] {
   if (!trip.departureDate) missing.push("departure_date");
   return missing;
 }
+
+/**
+ * Envelope returned by loadToolContext: tools decide what to do with it.
+ * - adminOverride=true → caller is an admin; statusResponse will be null even
+ *   when no active trip exists.
+ * - trip is present whenever the user has an unambiguous active trip.
+ * - statusResponse is the JSON the tool should return immediately if it wants
+ *   to gate on missing context (callers may also choose to ignore it).
+ */
+export type ToolContext = {
+  adminOverride: boolean;
+  trip: ActiveTripRow | null;
+  statusResponse: object | null;
+};
+
+export async function loadToolContext(
+  userId: string,
+  email: string,
+  adminEmails: string[],
+): Promise<ToolContext> {
+  const adminOverride = adminEmails.map((e) => e.toLowerCase()).includes(email.toLowerCase());
+
+  const resolved = await resolveActiveTrip(userId);
+
+  if (resolved.status === "ok") {
+    return { adminOverride, trip: resolved.trip, statusResponse: null };
+  }
+
+  if (adminOverride) {
+    return { adminOverride, trip: null, statusResponse: null };
+  }
+
+  return { adminOverride, trip: null, statusResponse: resolved };
+}
