@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, decimal, integer, date, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { auditColumns } from "./columns.js";
 import {
@@ -13,6 +13,10 @@ export const trips = pgTable("trips", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   carnivalSeasonId: uuid("carnival_season_id").notNull().references(() => carnivalSeasons.id),
+  arrivalDate: date("arrival_date"),
+  departureDate: date("departure_date"),
+  partySize: integer("party_size"),
+  budgetUsd: decimal("budget_usd", { precision: 10, scale: 2 }),
   metadata: jsonb("metadata"),
   ...auditColumns,
 });
