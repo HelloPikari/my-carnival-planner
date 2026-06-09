@@ -9,7 +9,7 @@
 import { db } from "@/src/db/index.js";
 import { trips, tripMembers } from "@/src/db/schema/trips.js";
 import { carnivalSeasons } from "@/src/db/schema/core.js";
-import { and, asc, eq, gte, isNull, or, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, or, gte, sql } from "drizzle-orm";
 
 export type ActiveTripRow = {
   id: string;
@@ -37,12 +37,10 @@ export type ResolveActiveTripResult =
       }>;
     };
 
-const NOW_YEAR = sql<number>`EXTRACT(YEAR FROM CURRENT_DATE)::int`;
-
 /**
- * Find the active trip for a user. "Active" = current or future season,
- * soonest arrival_date first (nulls last so brand-new trips without dates
- * still appear, just lower priority).
+ * Find the active trip for a user. "Active" = trip whose carnival season hasn't
+ * ended yet (endDate >= today, or endDate is null/unknown), soonest arrival_date
+ * first (nulls last so brand-new trips without dates still appear).
  *
  * Ambiguous when the top two candidates tie on (season year, arrival_date) —
  * usually means two unfilled trips for the same season.
@@ -67,7 +65,10 @@ export async function resolveActiveTrip(userId: string): Promise<ResolveActiveTr
       and(
         eq(tripMembers.userId, userId),
         isNull(trips.deletedAt),
-        gte(carnivalSeasons.year, NOW_YEAR),
+        or(
+          isNull(carnivalSeasons.endDate),
+          gte(carnivalSeasons.endDate, sql`CURRENT_DATE`),
+        ),
       ),
     )
     .orderBy(

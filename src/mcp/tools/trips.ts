@@ -1,7 +1,7 @@
 import { db } from "@/src/db/index.js";
 import { trips, tripMembers } from "@/src/db/schema/trips.js";
 import { carnivalSeasons, carnivals } from "@/src/db/schema/core.js";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, gte, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
@@ -42,7 +42,12 @@ async function queryCarnivalSeasons() {
     })
     .from(carnivalSeasons)
     .innerJoin(carnivals, eq(carnivals.id, carnivalSeasons.carnivalId))
-    .where(ne(carnivalSeasons.status, "archived"))
+    .where(
+      or(
+        isNull(carnivalSeasons.endDate),
+        gte(carnivalSeasons.endDate, sql`CURRENT_DATE`),
+      ),
+    )
     .orderBy(carnivalSeasons.year);
 
   return rows.map((r) => ({
