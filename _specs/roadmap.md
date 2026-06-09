@@ -1,6 +1,6 @@
 # My Carnival Planner — Roadmap
 **Last updated:** 2026-06-09
-**Updated by:** Phase 4.5 implementation session
+**Updated by:** Phase 4.5 implementation session (with 4.6 + 4.7 follow-ups from production testing)
 
 ## Phase 1: Foundation ✓
 > Data layer complete.
