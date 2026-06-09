@@ -102,6 +102,22 @@
 - [ ] Update `loadBands` to include 2027
 - [ ] Re-seed prod with 2027 data
 
+## Phase 4.8: Visual elements via MCP (scoping)
+> Use MCP's richer-than-text content (image blocks, resources, MCP Apps) to render state that's harder for the LLM to paper over. The text steering envelope (Phase 4.6) is the prompt-level guardrail; visual elements would be the UX-level guardrail layered on top. Idea origin: production session 2026-06-09 — even with steering text, the LLM still tried to be helpful around the "no data" case.
+
+**Goal of this phase: scope, don't ship.** Decide what gets a visual treatment, what stays text, and what the host-support story looks like.
+
+- [ ] Audit current MCP host UI render capabilities (Claude Desktop first; later: web, IDE clients)
+- [ ] Verify MCP spec direction for server-rendered UI (resources, Apps, structured content) — what's stable, what's still proposal
+- [ ] Pick the highest-value states for visual treatment. Strong candidates:
+   - "No data available" cards (current empty-state hallucination case)
+   - Persistent "active trip context" card (dates, party size, budget always visible)
+   - Comparison cards (band vs band, accommodation vs accommodation)
+   - "Missing context" prompts as visual forms instead of conversational asks
+- [ ] Define the fallback contract — every tool response must still work in text-only hosts; visual is **additive**, never a replacement
+- [ ] Decide whether visuals live in tool responses, separate `resources`, or both
+- [ ] Spec document: data model for each visual element, render expectations per host, graceful degradation
+
 ## Phase 5: Premium AI Features
 > The MCP server as an end-user product.
 
