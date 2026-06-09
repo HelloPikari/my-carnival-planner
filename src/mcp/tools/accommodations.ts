@@ -132,13 +132,17 @@ export function registerAccommodationTools(server: McpServer, adminEmails: strin
 
         const trip = ctx.trip!;
         const partySize = trip.partySize ?? undefined;
-        const remainingBudgetUsd = trip.budgetUsd ? parseFloat(trip.budgetUsd) : null;
+        const totalBudgetUsd = trip.budgetUsd ? parseFloat(trip.budgetUsd) : null;
 
         const results = await queryAccommodationsWithSkew({ ...input, partySize });
         return jsonResult({
           status: "ok",
           is_admin: ctx.adminOverride,
-          tripContext: { partySize, remainingBudgetUsd },
+          tripContext: {
+            partySize,
+            totalBudgetUsd,
+            budgetNote: "Total — itinerary subtraction lands later. Reason about per-night fit yourself.",
+          },
           accommodations: results,
         });
       } catch (e) {

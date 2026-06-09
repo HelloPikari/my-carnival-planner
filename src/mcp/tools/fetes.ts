@@ -51,7 +51,7 @@ export async function queryFetesForTrip(input: {
 
   const rows = await db
     .select({
-      feteId: fetes.id,
+      id: fetes.id,
       name: fetes.name,
       category: fetes.category,
       editionId: feteEditions.id,

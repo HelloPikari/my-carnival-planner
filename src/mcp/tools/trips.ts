@@ -214,16 +214,16 @@ export function registerTripTools(server: McpServer) {
         const result = await resolveActiveTrip(userId);
         if (result.status !== "ok") return jsonResult(result);
 
-        // remainingBudget is just budgetUsd for now — itinerary cost subtraction
-        // lands when create_itinerary_item ships in a later phase.
-        const remainingBudget = result.trip.budgetUsd
+        const totalBudget = result.trip.budgetUsd
           ? parseFloat(result.trip.budgetUsd)
           : null;
 
         return jsonResult({
           status: "ok",
           trip: result.trip,
-          remainingBudgetUsd: remainingBudget,
+          totalBudgetUsd: totalBudget,
+          budgetNote:
+            "Total trip budget — itinerary cost subtraction (remaining = total - confirmed item costs) will arrive in a later phase.",
           missing: missingGatedFields(result.trip),
         });
       } catch (e) {
