@@ -55,3 +55,11 @@ Experiments in `experiments/` are immutable once concluded (marked by a `CONCLUD
 - **Multi-carnival from day one.** Schema supports multiple carnivals; Trinidad is populated first.
 - **Yearly iteration pattern.** Fetes and bands have master entities with per-season editions.
 - **Ship small, iterate fast.** Every phase produces something usable.
+
+## MCP Design Principles — READ BEFORE TOUCHING MCP TOOLS
+
+See `_specs/mcp-design-principles.md` for the full standards. Summary:
+
+1. **Closed-loop steering** — every MCP tool response must include a `status` discriminator, a payload field, and (on any non-`ok` status) an explicit `guidance` field instructing the LLM what to do and what NOT to do. Bare empty arrays / generic errors cause hallucination.
+2. **Tool descriptions are load-bearing prompts** — they get inlined into the LLM's context every turn. Use them to specify what to gather before calling, what response states to expect, and what to call next.
+3. **Authoritative-data principle** — tool guidance should explicitly steer the LLM away from training-data fallbacks ("do NOT invent X").

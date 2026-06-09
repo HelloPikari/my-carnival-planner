@@ -80,6 +80,28 @@
 - Per-trip arrival-date cutoff in resolver (only fires when the season has ended)
 - End-to-end MCP handler tests (current coverage is query-level)
 
+## Phase 4.6: Steering Pass
+> Apply closed-loop steering (see [_specs/mcp-design-principles.md](mcp-design-principles.md)) across all MCP tool responses. Every empty/error/edge response must carry `status`, payload, and explicit `guidance` for the LLM. Triggered by 2026-06-09 production observation: `get_carnival_seasons` returned `[]` and the LLM hallucinated from training data.
+
+- [x] `get_carnival_seasons` — `no_upcoming_seasons` envelope with guidance (PR #12)
+- [ ] `list_fetes` — wrap empty fetes array with status + guidance (no editions in window)
+- [ ] `list_accommodations` — wrap empty results, especially the "no rooms fit party" early return
+- [ ] `list_bands` — wrap empty results
+- [ ] `get_fete` / `get_band` / `get_accommodation` — wrap not-found responses with guidance
+- [ ] `create_trip` — wrap validation failures with guidance on what to gather
+- [ ] Audit `update_trip_context` and `get_my_context` for envelope consistency
+- [ ] Audit tool descriptions for explicit state-handling instructions
+
+## Phase 4.7: 2027 Season Seed (Trinidad)
+> Extract and seed 2027 Trinidad Carnival data from Nicole's Airtable.
+
+- [ ] Add 2027 to `seedStatic` carnival_seasons (Carnival Monday computed from utility)
+- [ ] Extract 2027 fete editions from Airtable (run `db:extract`)
+- [ ] Update `loadFetes` to include 2027 alongside 2025/2026
+- [ ] Extract 2027 band themes + sections from Airtable
+- [ ] Update `loadBands` to include 2027
+- [ ] Re-seed prod with 2027 data
+
 ## Phase 5: Premium AI Features
 > The MCP server as an end-user product.
 

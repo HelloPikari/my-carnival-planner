@@ -137,15 +137,32 @@ export function registerTripTools(server: McpServer) {
     {
       title: "Get Carnival Seasons",
       description:
-        "List available carnival seasons (non-archived) so the user can pick which one their trip is for. " +
-        "Returns id, year, carnival name, season dates, status, and computed Carnival Monday. " +
+        "List upcoming carnival seasons (endDate today or later) so the user can pick which one their trip is for. " +
+        "Returns a status envelope: status='ok' with a populated seasons array, or status='no_upcoming_seasons' " +
+        "with an empty array and explicit guidance when nothing is configured. " +
         "Call this when starting trip planning before calling create_trip.",
       inputSchema: {},
     },
     async () => {
       try {
         const seasons = await queryCarnivalSeasons();
-        return jsonResult(seasons);
+        if (seasons.length === 0) {
+          return jsonResult({
+            status: "no_upcoming_seasons",
+            seasons: [],
+            message:
+              "No upcoming carnival seasons are currently configured in the system. " +
+              "Past seasons (e.g. Trinidad Carnival 2026, which took place Feb 16-17) are intentionally excluded; " +
+              "future seasons have not yet been seeded.",
+            guidance:
+              "Tell the user that planning for the next carnival season is not yet available in the system, " +
+              "and that data will be added closer to the next event. " +
+              "Do NOT invent carnival dates, season ids, or proceed to call create_trip. " +
+              "Do NOT fall back to general knowledge about Trinidad Carnival schedules — only data returned " +
+              "by this tool is authoritative for trip planning.",
+          });
+        }
+        return jsonResult({ status: "ok", seasons });
       } catch (e) {
         console.error("[get_carnival_seasons] error:", e);
         return errorResult("Error fetching carnival seasons");
