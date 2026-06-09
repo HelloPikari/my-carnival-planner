@@ -442,6 +442,9 @@ export async function loadAccommodations(locationMap: Map<string, string>) {
       plannerRating = match ? match[1] : undefined;
     }
 
+    const amenitiesRaw = f["fldQGsQazVkcACl1K"] as Array<{ name: string }> | undefined;
+    const amenities = Array.isArray(amenitiesRaw) ? amenitiesRaw.map(a => a.name) : undefined;
+
     const [accom] = await db
       .insert(accommodations)
       .values({
@@ -450,10 +453,15 @@ export async function loadAccommodations(locationMap: Map<string, string>) {
         starRating: isNaN(starRating as number) ? undefined : starRating,
         locationId,
         plannerRating,
+        amenities: amenities ?? null,
         metadata: {
           airtableId: rec.id,
           website: f["fldTtxs4UQSLu1u9V"] as string | undefined,
           description: f["fldjzqZVAeQAdQaPH"] as string | undefined,
+          minimumStay: selectName(f["fldcPRD84KNbgKCtu"]) ?? null,
+          safetyRating: (f["fldB9ZzRc01vDZ1vO"] as number | undefined) ?? null,
+          walkabilityRating: (f["fldHLaV70eX3kZ4Uz"] as number | undefined) ?? null,
+          locationRating: (f["fldIcswIjwPvJqKiS"] as number | undefined) ?? null,
         },
       })
       .returning();

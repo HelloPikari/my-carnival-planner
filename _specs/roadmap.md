@@ -1,6 +1,6 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-05-28
-**Updated by:** Deployment + infrastructure session
+**Last updated:** 2026-06-09
+**Updated by:** Phase 4.5 implementation session
 
 ## Phase 1: Foundation ✓
 > Data layer complete.
@@ -48,6 +48,37 @@
 - [ ] Trip creation and group coordination — Pro
 - [ ] Review submission
 - [ ] Image upload pipeline (storage + CDN)
+
+## Phase 4.5: Context-Aware MCP ✓
+> Stateful MCP server so the LLM can guide users through planning without hallucinating or losing context between sessions. Shipped 2026-06-09.
+
+**Data foundation:**
+- [x] Update accommodation seed to include amenities, safety/walkability/location ratings, minimum stay
+- [x] Re-seed accommodations locally with updated data
+- [x] Add `arrival_date`, `departure_date`, `party_size`, `budget_usd` columns to `trips` table
+
+**New MCP tools:**
+- [x] `get_carnival_seasons` — returns non-archived seasons with computed Carnival Monday
+- [x] `create_trip` — single-transaction trip + tripMember(role=organizer) creation; gathers 4 required fields conversationally
+- [x] `get_my_context` — returns active trip + `totalBudgetUsd` + missing gated fields; distinct responses for `no_active_trip` / `ambiguous`
+- [x] `update_trip_context` — partial update; typed cols for queryable fields, JSONB metadata merge for soft prefs
+
+**Enhanced existing tools:**
+- [x] `list_fetes` — gated on `arrival_date`/`departure_date`; filters editions by attendance window; includes `daysFromCarnivalMonday`
+- [x] `list_accommodations` — hard filter by party-size room availability; ranked by Nicole's planner rating; surfaces total budget
+- [x] `list_bands` — bands with theme for this season first, then party-size category preference
+- [x] Active trip auto-resolution — `resolveActiveTrip()` helper; ambiguous when top two tie on (season year, arrival_date)
+
+**Carnival math:**
+- [x] `carnivalMonday(year)` — Meeus/Jones/Butcher Easter algorithm, Carnival Monday = Easter − 48 days; vitest covering 2024-2027
+
+**Admin behavior:**
+- [x] `MCP_ADMIN_EMAILS` bypasses missing-context / no-trip gates; response carries `is_admin: true`
+
+**Known follow-ups (not in this phase):**
+- Itinerary spend subtraction — turn `totalBudgetUsd` into a true `remainingBudgetUsd` once we have a `create_itinerary_item` tool
+- Per-trip arrival-date cutoff in resolver (only fires when the season has ended)
+- End-to-end MCP handler tests (current coverage is query-level)
 
 ## Phase 5: Premium AI Features
 > The MCP server as an end-user product.
