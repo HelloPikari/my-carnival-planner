@@ -151,12 +151,12 @@ export function registerTripTools(server: McpServer) {
             status: "no_upcoming_seasons",
             seasons: [],
             message:
-              "No upcoming carnival seasons are currently configured in the system. " +
-              "Past seasons (e.g. Trinidad Carnival 2026, which took place Feb 16-17) are intentionally excluded; " +
-              "future seasons have not yet been seeded.",
+              "We don't have any upcoming carnivals available to plan for right now. " +
+              "Check back closer to the next event.",
             guidance:
-              "Tell the user that planning for the next carnival season is not yet available in the system, " +
-              "and that data will be added closer to the next event. " +
+              "Surface the message to the user verbatim or lightly paraphrased. " +
+              "Past seasons (e.g. Trinidad Carnival 2026, Feb 16-17) are filtered out by endDate, " +
+              "and forthcoming seasons have not been loaded into the database yet. " +
               "Do NOT invent carnival dates, season ids, or proceed to call create_trip. " +
               "Do NOT fall back to general knowledge about Trinidad Carnival schedules — only data returned " +
               "by this tool is authoritative for trip planning.",
