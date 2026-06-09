@@ -1,6 +1,6 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-05-28
-**Updated by:** Deployment + infrastructure session
+**Last updated:** 2026-06-09
+**Updated by:** MCP context-awareness design session
 
 ## Phase 1: Foundation ✓
 > Data layer complete.
@@ -48,6 +48,34 @@
 - [ ] Trip creation and group coordination — Pro
 - [ ] Review submission
 - [ ] Image upload pipeline (storage + CDN)
+
+## Phase 4.5: Context-Aware MCP (next up)
+> Make the MCP server stateful so the LLM can guide users through planning without hallucinating or losing context between sessions. Decisions from 2026-06-09 design session.
+
+**Data foundation (do first, one session):**
+- [x] Update accommodation seed to include amenities, safety/walkability/location ratings, minimum stay
+- [ ] Re-seed accommodations locally with updated data
+- [ ] Add `arrival_date`, `departure_date`, `party_size`, `budget_usd` columns to `trips` table (migration)
+
+**New MCP tools:**
+- [ ] `get_carnival_seasons` — returns available seasons so LLM can present options at trip creation
+- [ ] `create_trip` — creates trip + sets 4 required context fields in one call; LLM does intake conversationally
+- [ ] `get_my_context` — returns active trip context (profile fields + computed remaining budget), lists missing required fields
+- [ ] `update_trip_context` — partial update of any context fields (typed columns for server-queryable fields, JSONB metadata for soft preferences)
+
+**Enhanced existing tools:**
+- [ ] `list_fetes` — check user's active trip; if `arrival_date`/`departure_date` missing, return `{status: "missing_context", required: [...]}` instead of data; filter by attendance window when present; include `daysBeforeCarnivalMonday` computed field in responses
+- [ ] `list_accommodations` — skew results by `budget_usd` (remaining) and `party_size` when available
+- [ ] `list_bands` — skew results by `party_size` when available
+- [ ] Active trip auto-resolution — server selects most upcoming incomplete trip; returns "ambiguous" response if multiple
+
+**Key design decisions (from grill-me 2026-06-09):**
+- Only `arrival_date`/`departure_date` are server-enforced (gate tool responses); other fields are LLM-enforced via tool descriptions
+- `budget_usd` is a raw number; remaining = `budget_usd - SUM(confirmed itinerary item costs)`; LLM reasons about fit, server skews ranking
+- `party_size` is a real column (server skews band recommendations); soft preferences go in JSONB `metadata`
+- Carnival Monday is computed from year (calendar math), not stored — utility function, not a DB column
+- LLM can create trips directly (no web form required); trip creation = `carnival_season_id` + name + 4 required fields
+- Tool descriptions must state: "gather arrival_date, departure_date, party_size, budget_usd before calling planning tools"
 
 ## Phase 5: Premium AI Features
 > The MCP server as an end-user product.
