@@ -14,12 +14,28 @@ This is a living doc. Add principles here as they emerge from real failures.
 
 Every tool response is an object with:
 
-| Field | When | Purpose |
-|---|---|---|
-| `status` | always | Discriminator the LLM (and downstream code) can branch on — e.g. `ok`, `no_upcoming_seasons`, `missing_context`, `ambiguous`, `not_found` |
-| Payload field | always | The actual data, named for the entity (`seasons`, `fetes`, `trip`, etc.). May be `[]` or `null` — that's fine, it's the envelope that matters. |
-| `message` | when user-facing context matters | Human-readable explanation the LLM can surface to the user |
-| `guidance` | on every non-ok status | Explicit instructions for the LLM, **including don'ts** ("do NOT invent dates", "do NOT call X tool"). LLMs treat tool-output instructions roughly like system prompts. |
+| Field | When | Audience | Purpose |
+|---|---|---|---|
+| `status` | always | LLM + code | Discriminator the LLM (and downstream code) can branch on — e.g. `ok`, `no_upcoming_seasons`, `missing_context`, `ambiguous`, `not_found` |
+| Payload field | always | LLM | The actual data, named for the entity (`seasons`, `fetes`, `trip`, etc.). May be `[]` or `null` — that's fine, it's the envelope that matters. |
+| `message` | when user-facing context matters | **End user** | Plain-English text safe to surface verbatim. Treat as customer-facing copy. |
+| `guidance` | on every non-ok status | **LLM only** | Explicit instructions for the LLM, **including don'ts** ("do NOT invent dates", "do NOT call X tool"). LLMs treat tool-output instructions roughly like system prompts. |
+
+### `message` vs `guidance` — different audiences, different rules
+
+The two fields are easy to conflate. They aren't interchangeable.
+
+**`message` is end-user copy.** Write it like you'd write a UI string. Banned vocabulary includes (but isn't limited to):
+- "seeded" / "seed data" / "loaded into the database"
+- "configured in the system" / "in the system"
+- "endpoint" / "API" / "tool" / "tool call"
+- Internal table/column/tool names (`carnival_seasons`, `arrival_date`, `create_trip`, etc.)
+- Status discriminator values (`no_upcoming_seasons`, `missing_context`)
+- Stack-trace fragments, error codes, file paths
+
+If a non-technical user reading the message would feel like they're seeing internal plumbing, rewrite it.
+
+**`guidance` is for the LLM only.** Use precise internal terminology — tool names, column names, status values. The LLM follows it; the user never sees it. Include explicit don'ts. The verbosity that would be annoying in a `message` is appropriate here.
 
 ### Anti-pattern
 
@@ -35,10 +51,12 @@ The LLM sees this and thinks "no information available, I'll fill in what I know
 {
   "status": "no_upcoming_seasons",
   "seasons": [],
-  "message": "No upcoming carnival seasons are currently configured. Trinidad Carnival 2026 (Feb 16-17) has already taken place; 2027 has not yet been seeded.",
-  "guidance": "Tell the user that planning is not yet available and data will be added closer to the next event. Do NOT invent carnival dates or season ids. Do NOT fall back to general knowledge about Trinidad Carnival schedules — only data returned by this tool is authoritative."
+  "message": "We don't have any upcoming carnivals available to plan for right now. Check back closer to the next event.",
+  "guidance": "Surface the message to the user verbatim or lightly paraphrased. Past seasons (e.g. Trinidad Carnival 2026, Feb 16-17) are filtered out by endDate, and forthcoming seasons have not been loaded into the database yet. Do NOT invent carnival dates or season ids. Do NOT call create_trip. Do NOT fall back to general knowledge about Trinidad Carnival schedules — only data returned by this tool is authoritative."
 }
 ```
+
+Note how the `message` is plain customer-facing copy with zero internal terminology, while the `guidance` uses precise internal terms (`endDate`, `create_trip`) the LLM needs to act correctly.
 
 ### Where this applies
 
