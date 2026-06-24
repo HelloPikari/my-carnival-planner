@@ -35,7 +35,7 @@ export async function seedStatic() {
 
   console.log(`  Created Trinidad Carnival`);
 
-  // 2025 and 2026 seasons
+  // 2025, 2026, and 2027 seasons (Carnival Monday/Tuesday per carnivalMonday() utility)
   await db.insert(carnivalSeasons).values([
     {
       carnivalId: trinidadCarnival.id,
@@ -51,9 +51,16 @@ export async function seedStatic() {
       endDate: "2026-02-17",
       status: "active",
     },
+    {
+      carnivalId: trinidadCarnival.id,
+      year: 2027,
+      startDate: "2027-02-08",
+      endDate: "2027-02-09",
+      status: "active",
+    },
   ]);
 
-  console.log(`  Created 2025 + 2026 carnival seasons`);
+  console.log(`  Created 2025 + 2026 + 2027 carnival seasons`);
 
   // Subscription plans
   await db.insert(subscriptionPlans).values([

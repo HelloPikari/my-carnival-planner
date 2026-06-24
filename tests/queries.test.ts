@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect } from "vitest";
 import "dotenv/config";
 import { db } from "../src/db/index.js";
 import { eq, and, gte, lte, sql } from "drizzle-orm";
@@ -31,14 +31,15 @@ describe("Schema validation queries", () => {
     expect(result!.seasons.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("can query active carnival season", async () => {
+  it("can query active carnival seasons", async () => {
     const result = await db
       .select()
       .from(carnivalSeasons)
       .where(eq(carnivalSeasons.status, "active"));
 
-    expect(result.length).toBe(1);
-    expect(result[0].year).toBe(2026);
+    // 2026 and 2027 are both seeded as active; 2025 is archived.
+    const years = result.map((r) => r.year).sort();
+    expect(years).toEqual([2026, 2027]);
   });
 
   it("can query subscription plans by tier", async () => {
