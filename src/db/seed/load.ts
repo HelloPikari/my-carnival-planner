@@ -145,10 +145,10 @@ export async function loadVendors(): Promise<Map<string, string>> {
   return idMap;
 }
 
-// ─── Fetes (master + editions for 2025/2026) ─────────────────────────────────
+// ─── Fetes (master + editions for 2025/2026/2027) ────────────────────────────
 
 export async function loadFetes(
-  seasonIds: { s2025: string; s2026: string },
+  seasonIds: { s2025: string; s2026: string; s2027: string },
   vendorMap: Map<string, string>,
   locationMap: Map<string, string>,
 ) {
@@ -203,8 +203,8 @@ export async function loadFetes(
     feteIdMap.set(rec.id, fete.id);
   }
 
-  // Now load editions (only 2025 + 2026)
-  console.log(`  Loading fete editions (2025+2026 only)...`);
+  // Now load editions (2025 + 2026 + 2027)
+  console.log(`  Loading fete editions (2025+2026+2027)...`);
   let editionCount = 0;
 
   for (const rec of editionRecords) {
@@ -224,9 +224,10 @@ export async function loadFetes(
       year = typeof yearVal === "object" ? parseInt(yearVal.name) : parseInt(yearVal);
     }
 
-    if (!year || (year !== 2025 && year !== 2026)) continue;
+    if (!year || (year !== 2025 && year !== 2026 && year !== 2027)) continue;
 
-    const seasonId = year === 2025 ? seasonIds.s2025 : seasonIds.s2026;
+    const seasonId =
+      year === 2025 ? seasonIds.s2025 : year === 2026 ? seasonIds.s2026 : seasonIds.s2027;
     const feteAirtableId = firstLinkedId(f["fldSs7QaPFSwk6FOT"]);
     const feteId = feteAirtableId ? feteIdMap.get(feteAirtableId) : undefined;
     if (!feteId) continue;
@@ -244,7 +245,10 @@ export async function loadFetes(
         startDatetime: startRaw ? new Date(startRaw) : undefined,
         endDatetime: endRaw ? new Date(endRaw) : undefined,
         description,
-        status: status === "Confirmed" || status === "Active" ? "published" : "draft",
+        status:
+          status === "Released" || status === "Confirmed" || status === "Active"
+            ? "published"
+            : "draft",
         metadata: {
           airtableId: rec.id,
           airtableStatus: status,
@@ -273,7 +277,7 @@ export async function loadFetes(
 // ─── Bands ───────────────────────────────────────────────────────────────────
 
 export async function loadBands(
-  seasonIds: { s2025: string; s2026: string },
+  seasonIds: { s2025: string; s2026: string; s2027: string },
 ) {
   const bandRecords = readExtract("bands.json");
   const themeRecords = readExtract("band-themes.json");
@@ -313,7 +317,8 @@ export async function loadBands(
     bandIdMap.set(rec.id, band.id);
   }
 
-  // Load themes (only those linked to 2025/2026 trips)
+  // Load themes for each band (carnival season resolved from the linked Trip's year).
+  // NOTE: year detection below is currently broken — see roadmap Phase 4.7 follow-up.
   console.log(`  Loading band themes...`);
   const themeIdMap = new Map<string, string>();
 
@@ -340,7 +345,8 @@ export async function loadBands(
     }
 
     // Default to 2026 if we can't determine year
-    const seasonId = year === 2025 ? seasonIds.s2025 : seasonIds.s2026;
+    const seasonId =
+      year === 2025 ? seasonIds.s2025 : year === 2027 ? seasonIds.s2027 : seasonIds.s2026;
 
     const [theme] = await db
       .insert(bandThemes)

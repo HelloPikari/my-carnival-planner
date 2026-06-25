@@ -36,11 +36,16 @@ async function main() {
     .from(carnivalSeasons)
     .where(eq(carnivalSeasons.year, 2026));
 
-  if (!season2025 || !season2026) {
-    throw new Error("2025/2026 seasons not found — did static seed run?");
+  const [season2027] = await db
+    .select()
+    .from(carnivalSeasons)
+    .where(eq(carnivalSeasons.year, 2027));
+
+  if (!season2025 || !season2026 || !season2027) {
+    throw new Error("2025/2026/2027 seasons not found — did static seed run?");
   }
 
-  const seasonIds = { s2025: season2025.id, s2026: season2026.id };
+  const seasonIds = { s2025: season2025.id, s2026: season2026.id, s2027: season2027.id };
 
   const locationMap = await loadLocations();
   const vendorMap = await loadVendors();

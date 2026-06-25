@@ -1,6 +1,6 @@
 # My Carnival Planner — Roadmap
-**Last updated:** 2026-06-09
-**Updated by:** Phase 4.5 implementation session
+**Last updated:** 2026-06-24
+**Updated by:** Session — Phase 4.7 (2027 fete seed, local + prod) + publish-status fix
 
 ## Phase 1: Foundation ✓
 > Data layer complete.
@@ -92,18 +92,72 @@
 - [ ] Audit `update_trip_context` and `get_my_context` for envelope consistency
 - [ ] Audit tool descriptions for explicit state-handling instructions
 
-## Phase 4.7: 2027 Season Seed (Trinidad)
-> Extract and seed 2027 Trinidad Carnival data from Nicole's Airtable.
+## Phase 4.7: 2027 Season Seed (Trinidad) — fetes ✓ (2026-06-24)
+> Extract and seed 2027 Trinidad Carnival data from Nicole's Airtable. Fetes done; bands have no 2027 source data yet.
 
-- [ ] Add 2027 to `seedStatic` carnival_seasons (Carnival Monday computed from utility)
-- [ ] Extract 2027 fete editions from Airtable (run `db:extract`)
-- [ ] Update `loadFetes` to include 2027 alongside 2025/2026
-- [ ] Extract 2027 band themes + sections from Airtable
-- [ ] Update `loadBands` to include 2027
-- [ ] Re-seed prod with 2027 data
+- [x] Add 2027 to `seedStatic` carnival_seasons (Carnival Monday 2027-02-08 via utility; status active)
+- [x] Extract 2027 fete editions from Airtable (107 editions appended to `data/airtable/fetes-by-year.json`)
+- [x] Update `loadFetes` to include 2027 alongside 2025/2026 (+ `index.ts` wires `s2027`)
+- [x] Re-seed local — 2025 (58) / 2026 (105) / 2027 (107) editions; 2025/2026 retained for testing
+- [x] Re-seed prod with 2027 data — **additive** (insert-only, idempotent; no drop). Live users/trips untouched.
+- [x] Update `loadBands` to accept 2027 (type + year→season map) — but see follow-up bug below: theme year detection is broken upstream, so this path is currently inert
+- [ ] Extract 2027 band themes + sections — **blocked: not in Airtable yet** (Costumes base Theme table stops at 2026)
+
+**Follow-up bugs (code review 2026-06-25 — deferred to a separate PR):**
+- **Timezone window drops boundary fetes** (`src/mcp/tools/fetes.ts`, `queryFetesForTrip`). The attendance
+  window is built in UTC (`${departureDate}T23:59:59Z`) but fetes are Trinidad time (AST, UTC−4); a late-night
+  fete on a trip's first/last day falls outside the UTC window and is silently dropped. Fix: build the window in
+  AST. Affects all seasons.
+- **`loadBands` files every theme under 2026.** The theme year is read as a plain array, but the year-lookup
+  field is the `{linkedRecordIds, valuesByLinkedRecordId}` object shape (same shape `loadFetes` already handles),
+  so `year` is always undefined → defaults to `s2026`. Verified: all 28 themes land in 2026 regardless of real
+  year (2020–2026). Fix: reuse `loadFetes`' year parser + add a year guard. **Also needs a prod band-data
+  correction** (prod has the same bug). Do NOT just add a guard without fixing detection — it would skip all themes.
+
+**Publish-status fix (found during verification):** `load.ts` mapped only `"Confirmed"/"Active"` → `published`,
+but real Airtable statuses are `"Released" / "Not Announced Yet" / "Announced -- Not Released"` → every edition
+was `draft`, so `list_fetes` (trip path, requires `published`) returned nothing for any season. Added `"Released"` →
+`published`. After re-seed: 2025 = 55 published, 2026 = 42 published, 2027 = 0 (none released yet — correct).
+Applied to prod via the additive script (97 existing editions updated). Admin path (`queryFetes`, master table)
+masked this since it never hits the edition status filter.
+
+**Data quality notes for Nicole (2027 fete editions):**
+- "Xperience" has start `2027-10-27` (8 months after Carnival) — almost certainly a date typo.
+- "FOC Carnival" `2026-12-17` and "Zèle Cooler" `2027-01-03` fall just outside the Carnival window — verify.
+- All 107 2027 fetes are `Not Announced Yet` (no prices/tickets yet) — expected this far out; they'll surface in
+  `list_fetes` as Nicole flips statuses to `Released`.
+
+## Phase 4.8: Visual elements via MCP (scoping)
+> Use MCP's richer-than-text content (image blocks, resources, MCP Apps) to render state that's harder for the LLM to paper over. The text steering envelope (Phase 4.6) is the prompt-level guardrail; visual elements would be the UX-level guardrail layered on top. Idea origin: production session 2026-06-09 — even with steering text, the LLM still tried to be helpful around the "no data" case.
+
+**Goal of this phase: scope, don't ship.** Decide what gets a visual treatment, what stays text, and what the host-support story looks like.
+
+- [ ] Audit current MCP host UI render capabilities (Claude Desktop first; later: web, IDE clients)
+- [ ] Verify MCP spec direction for server-rendered UI (resources, Apps, structured content) — what's stable, what's still proposal
+- [ ] Pick the highest-value states for visual treatment. Strong candidates:
+   - "No data available" cards (current empty-state hallucination case)
+   - Persistent "active trip context" card (dates, party size, budget always visible)
+   - Comparison cards (band vs band, accommodation vs accommodation)
+   - "Missing context" prompts as visual forms instead of conversational asks
+- [ ] Define the fallback contract — every tool response must still work in text-only hosts; visual is **additive**, never a replacement
+- [ ] Decide whether visuals live in tool responses, separate `resources`, or both
+- [ ] Spec document: data model for each visual element, render expectations per host, graceful degradation
+
+## Phase 4.9: Premium MCP Access Gating
+> Make the MCP server a real Premium-only paid feature. Spec: [_specs/2026-06-10-premium-mcp-access-entitlements.md](2026-06-10-premium-mcp-access-entitlements.md)
+>
+> **Sequencing:** NOT the immediate next task. This is a prerequisite for opening public signups (Phase 4) and exposing MCP as the paid product (Phase 5) — flip the gate on just before the public arrives, not before the product is ready. Today the MCP server is only used by admins, so the current "free = active" gap leaks nothing yet. Recommended next work is Phase 4.6 (Steering Pass), optionally with MCP tool-call logging, to make the product worth paying for first.
+
+- [ ] Stripe: Premium product + price + `mcp_access` Entitlement Feature
+- [ ] WorkOS: connect Stripe via Stripe Connect; confirm `entitlements` claim carries `mcp_access` (verify claim shape from a live token)
+- [ ] `src/mcp/auth.ts`: gate on `entitlements ∋ mcp_access`; admin emails bypass; distinguishable `not_entitled` log
+- [ ] `src/mcp/provision.ts`: provisioning no longer implies access; subscriptionPlan/Status become dormant
+- [ ] Web app: AuthKit hosted signup + "Upgrade to Premium" → Stripe Checkout + billing-portal link
+- [ ] Regression test: reject foreign `client_id` token (boundary already in `auth.ts:30`)
+- [ ] Unit tests: grant with entitlement, deny without, deny cross-app, admin bypass
 
 ## Phase 5: Premium AI Features
-> The MCP server as an end-user product.
+> The MCP server as an end-user product. Gated by Phase 4.9.
 
 - [ ] Expose MCP server to Premium tier users (scoped read-only tools)
 - [ ] AI trip planning tools: "build me a fete schedule", "compare band sections"
